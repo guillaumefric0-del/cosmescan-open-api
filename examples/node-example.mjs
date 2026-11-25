@@ -1,15 +1,12 @@
-// Run with: node examples/node-example.mjs
-const BASE_URL = "https://cosmescan.com/api/v1";
+// Example: Decode a cosmetic/perfume batch code using CosmeScan Public REST API v1
+const url = 'https://cosmescan-vision.guillaumefric0.workers.dev/v1/decode?brand=dior&code=4B01';
 
-async function main() {
-  const brandsRes = await fetch(`${BASE_URL}/brands.json`);
-  const brands = await brandsRes.json();
-  console.log(`Loaded ${brands.length} cosmetic & perfume brands from CosmeScan.`);
-
-  const diorRes = await fetch(`${BASE_URL}/brand/dior.json`);
-  const dior = await diorRes.json();
-  console.log(`Sample: ${dior.name} (${dior.conglomerate}) — Format: ${dior.batchCode?.format}`);
-  console.log(`Location (EN): ${dior.batchCode?.locationEn}`);
+const res = await fetch(url);
+if (!res.ok) {
+  throw new Error(`HTTP ${res.status}: ${await res.text()}`);
 }
 
-main().catch(console.error);
+const data = await res.json();
+console.log(`${data.brand.name} (${data.brand.conglomerate})`);
+console.log(`Batch: ${data.normalizedCode} | Manufactured: ${data.productionDateFormatted} | Status: ${data.statusLabel}`);
+console.log(`Source: ${data.sourceUrl}`);

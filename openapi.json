@@ -1,0 +1,114 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CosmeScan Public Batch Code API",
+    "version": "1.0.0",
+    "description": "Free, public, read-only REST API for decoding cosmetic, skincare, K-Beauty, and perfume batch codes across 2,375 brands. Strict fair-use rate limits apply (6 requests/minute, 30 requests/hour per IP).",
+    "contact": {
+      "name": "CosmeScan",
+      "url": "https://cosmescan.com/api-docs/",
+      "email": "guillaume@cosmescan.com"
+    },
+    "license": {
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://cosmescan-vision.guillaumefric0.workers.dev",
+      "description": "Production Edge API (Cloudflare Workers)"
+    }
+  ],
+  "paths": {
+    "/v1/decode": {
+      "get": {
+        "operationId": "decodeBatchCode",
+        "summary": "Decode a cosmetic or perfume batch code",
+        "description": "Computes manufacturing date, unopened shelf life, age in months, freshness status, and counterfeit clone signal for a given brand and batch code.",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "required": true,
+            "description": "Brand slug (e.g. dior, chanel, loreal-paris) or exact brand name.",
+            "schema": { "type": "string", "example": "dior" }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "description": "Alphanumeric batch / lot code printed on the product (1-32 characters).",
+            "schema": { "type": "string", "example": "4B01" }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "description": "Optional output language (en, fr, es, de, it, pt, pl, ja, zh, ko, ru, ar). Defaults to en.",
+            "schema": { "type": "string", "default": "en" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Batch code decoded successfully" },
+          "400": { "description": "Missing or invalid query parameters" },
+          "404": { "description": "Unknown brand identifier" },
+          "429": { "description": "Rate limit exceeded (6 req/min or 30 req/hour per IP)" }
+        }
+      }
+    },
+    "/v1/brands": {
+      "get": {
+        "operationId": "searchBrands",
+        "summary": "Search supported cosmetic and perfume brands",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Search query (brand name, conglomerate, or category).",
+            "schema": { "type": "string", "example": "dior" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum results to return (1-50, default 20).",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 50, "default": 20 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Pagination offset (default 0).",
+            "schema": { "type": "integer", "minimum": 0, "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Paginated brand list" },
+          "429": { "description": "Rate limit exceeded" }
+        }
+      }
+    },
+    "/v1/brands/{id}": {
+      "get": {
+        "operationId": "getBrandById",
+        "summary": "Get metadata and batch code format for a single brand",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Canonical brand slug (e.g. dior, chanel, estee-lauder).",
+            "schema": { "type": "string", "example": "dior" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Brand metadata object" },
+          "404": { "description": "Brand not found" },
+          "429": { "description": "Rate limit exceeded" }
+        }
+      }
+    }
+  }
+}

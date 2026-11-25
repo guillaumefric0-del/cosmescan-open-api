@@ -1,17 +1,13 @@
-"""Run with: python examples/python_example.py"""
 import requests
 
-BASE_URL = "https://cosmescan.com/api/v1"
+resp = requests.get(
+    "https://cosmescan-vision.guillaumefric0.workers.dev/v1/decode",
+    params={"brand": "dior", "code": "4B01"},
+    timeout=10,
+)
+resp.raise_for_status()
+data = resp.json()
 
-
-def main():
-    brands = requests.get(f"{BASE_URL}/brands.json", timeout=10).json()
-    print(f"Loaded {len(brands)} cosmetic & perfume brands from CosmeScan.")
-
-    dior = requests.get(f"{BASE_URL}/brand/dior.json", timeout=10).json()
-    print(f"Sample: {dior['name']} ({dior['conglomerate']}) — Format: {dior['batchCode']['format']}")
-    print(f"Location (EN): {dior['batchCode']['locationEn']}")
-
-
-if __name__ == "__main__":
-    main()
+print(f"{data['brand']['name']} ({data['brand']['conglomerate']})")
+print(f"Batch: {data['normalizedCode']} | Manufactured: {data['productionDateFormatted']} | Status: {data['statusLabel']}")
+print(f"Source: {data['sourceUrl']}")
